@@ -1,0 +1,57 @@
+[server]
+port = "8000"
+
+[page]
+height = 760
+width = 601
+
+[compname]
+yoff = 90
+xoff = 135
+maxchars = 100
+
+[ticket]
+background = '#FFF088'
+border = true
+borderwidth = 2
+width = 300
+height = 150
+
+name = '4000 CAMPBELLVILLE ROAD INC.'
+namexoff = 20
+nameyoff = 30
+namefont = '10px Helvetica'
+
+address = '4000 Campbellville Side Road, Milton, Ont.'
+addrxoff = 20
+addryoff = 40
+addrfont = '8px Arial'
+
+datexoff = 190
+dateyoff = 40
+datefont = '8px Arial'
+
+compxoff = 20
+compyoff = 60
+compfont = '10px Arial'
+
+idxoff = 190
+idyoff = 30
+idfont = '12px Arial'
+
+dredxoff = 20
+dredyoff = 80
+dredfont = '8px Arial'
+
+bcodexoff = 20
+bcodeyoff = 100
+
+[security]
+secret = "38hnfco4h7fhujwshfuwoi7hulH"
+
+[mysql]
+host = 'localhost'
+database = 'campbellville'
+user = 'albatross'
+password = 'jumanji'
+

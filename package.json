@@ -1,0 +1,21 @@
+{
+  "name": "scqp",
+  "version": "1.0.0",
+  "description": "Node server for monitoring silvercreek quarry vouchers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dennis Mckinnon",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^1.5.2",
+    "canvas": "^1.3.7",
+    "fs-extra": "^0.26.4",
+    "io-barcode": "^1.2.0",
+    "moment": "^2.11.1",
+    "mysql": "^2.10.2",
+    "pem": "^1.8.1",
+    "toml": "^2.3.0"
+  }
+}
