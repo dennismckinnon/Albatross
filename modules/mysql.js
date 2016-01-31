@@ -11,71 +11,72 @@ function createTicket(compname, cb) {
 	date = moment().format('YYYY-MM-DD')
 	connection.query('INSERT INTO tickets SET ?', {company: compname, issuedate: date}, function(err, result){
 		if (err) return cb(err, null);
-		console.log(result.insertId);
-		return cb(null, result.insertId.toString())
+		return cb(null, {code: 200, message: "Ticket created with id: " + result.insertId.toString(), data: result.insertId.toString()}, result.insertId.toString())
 	})
 }
 
 function redeemTicket(IDString, cb) {
-	date = moment().format('YYYY-MM-DD')
-	//Need to check if ticket is valid return error if it isn't
-	console.log("1")
-	checkRedeemed(IDString, function(err, result){
-		console.log("1a")
-		console.log(err)
-		console.log("1b")
-		if (err) return cb(err, 500);
-		console.log("2")
+	date = moment().format('YYYY-MM-DD');
 
-		if (result == null || result == true) return cb(new Error("The ticket could not be redeemed"), 400);
-		console.log("3")
+	getTicketInfo(IDString, function(err, result, retval){
+		if (err) return cb(err, null);
+
+		if (result.code != 200) return cb(null, result); 
+
+		if (!(result.valid === 1)) {
+			return cb(null, {code:400, message:"No record of Ticket. Ticket invalid and possible forgery. Contact administrator and report, may indicate security breach"})
+		}
+
+		if (result.redeemed) {
+			return cb(null, {code:400, message:"Ticket has already been redeemed"})
+		}
 
 		connection.query("update tickets set redeemdate=?, redeemed=true where ID=?",[date, IDString], function(err, results){
-			if (err) return cb(err, 500);
-			console.log(results)
-			return cb(null)
-
+			if (err) return cb(err, null);
+			return cb(null, {code: 200, message:"The Ticket was successfully redeemed!"})
 		})
 	})
-
-	return cb(null, null)
 }
+
+
+// Database Reading information
 
 function checkValid(IDString, cb) {
 	//returns true if valid
 	connection.query('Select * from tickets where ID = ?', [IDString], function(err, results, fields){
 		if (err) return cb(err, null);
 
-		if (results.length == 0) return cb(null, false);
+		if (results.length == 0) return cb(null, {code: 200, message: "Ticket is not valid", data: false});
 
-		return cb(null, (results[0].valid==1))
+		return cb(null, {code: 200,  message: "Ticket is " + (results[0].valid==1 ? "valid" : "not valid"), data: (results[0].valid == 1)}, (results[0].valid == 1))
 	})
 }
 
 function checkRedeemed(IDString, cb){
-	console.log("6")
 	//returns true is redeemed
 	connection.query('Select * from tickets where ID = ?', [IDString], function(err, results, fields){
-		console.log("7")
-		if (err) return cb(err, null);
-		console.log("8")
+		if (err) return cb(err, null, null);
 
-		if (results.length == 0) return cb(null, null);
-		console.log("9")
-		return cb(null, (results[0].redeemed==1))
+		if (results.length == 0) return cb(null, {code: 400, message: "Ticket does not exist", data: null}, null);
+
+		return cb(null, {code: 200, message: "Ticket " + (results[0].redeemed==1 ? "been " : "not been ") + "redeemed", data: (results[0].redeemed == 1)},  (results[0].redeemed == 1))
 	})
 }
 
 function getTicketInfo(IDString, cb){
 	//Return all ticket info
+	console.log(IDString)
 	connection.query('Select * from tickets where ID = ?', [IDString], function(err, results, fields){
+		console.log(results)
 		if (err) return cb(err, null);
 
-		if (results.length == 0) return cb(null, null);
+		if (results.length == 0) return cb(null, {code: 400, message: "Ticket does not exist", data: null}, null);
 
-		return cb(null, results[0])
+		return cb(null, {code: 200, message: "Ticket found", data: results[0]},  results[0])
 	})
 }
+
+
 
 module.exports = {
 	createTicket: createTicket,

@@ -2,11 +2,11 @@ var ioBarcode = require("io-barcode");
 var Canvas = require("canvas");
 var Image = Canvas.Image;
 
-var crypto = require('crypto');
 var moment = require('moment');
 var async = require('async');
 
 var mysql = require('./mysql');
+var verifi = require('./verification');
 var cfg = require("../core/config");
 
 
@@ -63,39 +63,6 @@ function drawTicket(ctx, ID, code, compname, date, xpos, ypos){
 
 }
 
-function packCheck(ID, check){
-	//Outputs packed checkstring
-	packed = ID + "-" + check
-	return packed
-}
-
-function unpackCheck(checkstr){
-	unpacked = checkstr.split("-")
-	return unpacked
-}
-
-function runHMAC(data, secret){
-	HMAC = crypto.createHmac('sha1', secret)
-	HMAC.update(data)
-	return HMAC.digest('base64').slice(0,10);
-}
-
-function HMACIFY(ID, secret){
-	digest = runHMAC(ID, secret)
-	return packCheck(ID, digest);
-}
-
-function HMACVerify(datastr, secret){
-	data = unpackCheck(datastr)
-	digest = runHMAC(data[0], secret)
-
-	if (digest == data[1]){
-		return true
-	} else {
-		return false
-	}
-}
-
 function makeTickets(N, IDs, codes, compname){
 	//Need to get Date
 	date = moment().format('ll')
@@ -103,8 +70,6 @@ function makeTickets(N, IDs, codes, compname){
 	var canvas = new Canvas(cfg.page.width, cfg.page.height, 'pdf');
 	ctx = canvas.getContext('2d');
 
-
-	console.log("Testing")
 	count = 0
 	while (count < N){
 		//As long as we have more to print repeat this process
@@ -117,7 +82,6 @@ function makeTickets(N, IDs, codes, compname){
 			while(ypos + cfg.ticket.height < cfg.page.height){
 				//Draw ticket
 				drawTicket(ctx, IDs[count], codes[count], compname, date, xpos, ypos)
-//				drawTicket(ctx, IDs[count], "1234567890123456", compname, date, xpos, ypos)
 				count = count + 1
 				ypos = ypos + cfg.ticket.height
 			}
@@ -160,35 +124,8 @@ function makeTickets(N, IDs, codes, compname){
 	return canvas
 }
 
-function realDeal(N, compname, callback){
-	//TODO make this ASYNC
-	//N is an Int
-	//compName is a string
 
-	IDs = []
-	codes = []
 
-	//Get ID's
-	i = 0
-	async.whilst(function(){return i<N},
-		function(acb){
-			i++;
-			mysql.createTicket(compname, function(err, ID){
-				if (err) return acb(err);
-
-				IDs.push(ID)
-				codes.push(HMACIFY(ID, cfg.security.secret))
-				console.log('ID: ' + IDs[i-1] + " code: " + codes[i-1] + " verify? " + HMACVerify(codes[i-1], cfg.security.secret).toString())
-				return acb(null)
-			})
-
-		},function(err){
-			if (err) return callback(err);
-			//ID's Created.  Time to make the sheets
-			return callback(null, makeTickets(N, IDs, codes, compname))
-		}
-	)
-
+module.exports = {
+	makeTickets: makeTickets
 }
-
-module.exports = realDeal;
