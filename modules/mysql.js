@@ -77,11 +77,45 @@ function getTicketInfo(IDString, cb){
 }
 
 
+//User functions
+function createUser(user, cb){
+	user.email = user.email.toLowerCase();
+	connection.query('Insert into users set ?', user, function(err, result){
+		if (err) return cb(err, null);
+
+		return cb(null, {code: 200, message: "User created with uid: " + result.insertId.toString(), data: result.insertId.toString()}, result.insertId.toString())
+	})
+}
+
+function findUsername(username, cb){
+	connection.query('Select * from users where username = ?', [username], function(err, results, fields){
+		if (err) return cb(err, null);
+
+		if (results.length == 0) return cb(null, {code:400, message: "Username not found", data: null}, null);
+
+		return cb(null, {code:200, message: "Username Found!", data: results[0]}, results[0]);
+	})
+}
+
+function findUserByEmail(email, cb){
+	connection.query('Select * from users where email = ?', [email.toLowerCase()], function(err, results, fields){
+		if (err) return cb(err, null);
+
+		if (results.length == 0) return cb(null, {code:400, message: "User with provided email not found", data: null}, null);
+
+		return cb(null, {code:200, message: "User with email Found!", data: results[0]}, results[0]);
+	})
+}
+
+
 
 module.exports = {
 	createTicket: createTicket,
 	redeemTicket: redeemTicket,
 	checkValid: checkValid,
 	checkRedeemed: checkRedeemed,
-	getTicketInfo: getTicketInfo
+	getTicketInfo: getTicketInfo,
+	createUser: createUser,
+	findUsername: findUsername,
+	findUserByEmail: findUserByEmail,
 }

@@ -1,6 +1,6 @@
 var restify = require('restify');
-//var restifyjwt = require('restify-jwt');
-//var auth = require('../modules/auth');
+var restifyjwt = require('restify-jwt');
+var auth = require('../modules/auth');
 var cfg = require('./config');
 
 var name = "The Albatross Server";
@@ -10,7 +10,8 @@ restify.CORS.ALLOW_HEADERS.push('authorization')
 var noauth = [
 	'/',
 	'/login',
-	'/status'
+	'/status',
+	'/newuser'
 ]
 
 function start(cb){
@@ -21,7 +22,7 @@ function start(cb){
 
 	server.use(restify.CORS());
 
-//	server.use(restifyjwt({secret: cfg.security.tokenSecret, getToken: auth.fromHeader, processPayload: auth.tokenParser}).unless({method:['OPTIONS'], path: noauth}))
+	server.use(restifyjwt({secret: cfg.security.TokenSecret, getToken: auth.fromHeader}).unless({method:['OPTIONS'], path: noauth}))
 
 //	require('../routes/ui').addRoutes(server);
 	require('../routes/routes').addRoutes(server);

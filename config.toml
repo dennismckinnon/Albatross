@@ -47,7 +47,12 @@ bcodexoff = 20
 bcodeyoff = 100
 
 [security]
-secret = "38hnfco4h7fhujwshfuwoi7hulH"
+TicketSecret = "38hnfco4h7fhujwshfuwoi7hulH"
+TokenSecret = "Hellothere"
+EncryptionSecret = "SHHHHHH!!"
+Salt = "andpepper"
+tokenExpiry = 12
+
 
 [mysql]
 host = 'localhost'

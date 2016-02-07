@@ -6,6 +6,7 @@ var draw = require('../modules/draw');
 var mysql = require('../modules/mysql');
 var verifi = require('../modules/verification');
 var cfg = require('../core/config');
+var auth = require('../modules/auth');
 
 module.exports = {
     addRoutes: addRoutes,
@@ -13,6 +14,7 @@ module.exports = {
 
 function addRoutes(server) {
     server.post({url:'/login'}, loginRoute);
+    server.post('/newuser', createUser);
 //    server.get('/settings', settingsRoute);
 //    server.get('/status', statusRoute);
     server.get({url:'/hello'}, helloRoute_get);
@@ -25,13 +27,14 @@ function addRoutes(server) {
 
 //These are for testing purposes ONLY 
 // GET /hello
+// GET /hello
 var helloRoute_get =function(req, res, next) {
-    res.send("Hello!");
+    res.json(req.user);
     return next();
 };
 
 var helloRoute_post =function(req, res, next) {
-    res.send("Hello!!!")
+    res.json(req.user);
     return next();
 };
 
@@ -73,11 +76,54 @@ var getimage_get = function(req, res, next){
     )
 }
 
-// Real stuff
-var loginRoute = function(req, res, next){
-    res.send("TEMPORARY")
-    return next()
+var createUser = function(req, res, next){
+    var passkey = auth.makeKey(req.body.password).toString('hex')
+    user = {
+        username: req.body.username,
+        passhash: passkey,
+        firstname: req.body.firstname,
+        lastname:  req.body.lastname,
+        email: req.body.email,
+        isAdmin: req.body.isAdmin,
+    }
+    mysql.createUser(user, function(err, result){
+        if (err) {
+            res.send(500, err)
+            return next()
+        }
+
+        res.json(result.code, result)
+        return next()
+    })
 }
+
+// Real stuff
+var loginRoute = function(req, res, next) {
+    var username = req.body.username
+    mysql.findUsername(username, function(err, result,  data){
+        if (err) {
+            res.send(500, err)
+            return next()
+        }
+
+        if (result.code != 200){
+            res.send(401, {code: 401, message: result.message})
+            return next()
+        }
+
+        var passkey = auth.makeKey(req.body.password).toString('hex')
+        if (data.passhash != passkey) {
+            res.json(401, {code: 401, message: "Incorrect Password"})
+            return next()
+        }
+
+        var user = {username: data.username, isAdmin: data.isAdmin, firstname: data.firstname, lastname: data.lastname, uid: data.uid};
+        var token = auth.makeToken(user)
+        res.json({token: token});
+        return next()
+
+    });
+};
 
 var create_post = function(req, res, next){
     N = parseInt(req.params.number);
@@ -95,7 +141,7 @@ var create_post = function(req, res, next){
                 if (err) return acb(err);
 
                 IDs.push(ID)
-                codes.push(verifi.HMACIFY(ID, cfg.security.secret))
+                codes.push(verifi.HMACIFY(ID, cfg.security.TicketSecret))
                 console.log('ID: ' + IDs[i-1] + " code: " + codes[i-1] + " verify? " + verifi.HMACVerify(codes[i-1], cfg.security.secret).toString())
                 return acb(null)
             })
@@ -120,7 +166,7 @@ var create_post = function(req, res, next){
 var redeem_post = function(req, res, next){
     //Insert verification
     ID = parseInt(req.params.idstr.split("-")[0])
-    if (!verifi.HMACVerify(req.params.idstr, cfg.security.secret)){
+    if (!verifi.HMACVerify(req.params.idstr, cfg.security.TicketSecret)){
         res.json(400, {code: 400, message: "The ticket failed to be validated. It might be a forgery or you might have entered the ID string incorrectly"})
         return next()
     }
