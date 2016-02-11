@@ -1,9 +1,26 @@
+
 [server]
+service = 'Albatross Tickets'
 port = "8000"
+
+
 
 [page]
 height = 760
 width = 601
+
+
+
+[email]
+host = 'smtp.mailgun.org'
+port = 465
+secure = true
+
+[email.auth]
+user = 'postmaster@mail.hedbt.com'
+pass = '9acc41b6ffc70e157baf5fa4eaedbba3'
+
+
 
 [compname]
 yoff = 90
@@ -56,7 +73,7 @@ tokenExpiry = 12
 
 [mysql]
 host = 'localhost'
-database = 'campbellville'
+database = 'albatross'
 user = 'albatross'
 password = 'jumanji'
 

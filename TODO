@@ -4,3 +4,14 @@
 4) Add in user invitation/ email integration
 5) Add in user email authentication
 6) Do custom ticket uploading
+
+
+Misc:
+- Sent emails should use HTML based forms so we can have clickable links
+- Make config file hot swap-able?
+
+
+Up next: 
+API should not send redirects. UI should process response and then do the redirect itself
+1) remove redirects from API
+2) Create new UI to allow for signup

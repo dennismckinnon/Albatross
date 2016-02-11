@@ -9,9 +9,12 @@ restify.CORS.ALLOW_HEADERS.push('authorization')
 
 var noauth = [
 	'/',
-	'/login',
+//	/\/api\/?.*/,
+	'/api/login',
+	'/api/signup',
+	/\/api\/confirm\/?.*/,
 	'/status',
-	'/newuser'
+	/\/ui\/?.*/
 ]
 
 function start(cb){
@@ -24,7 +27,7 @@ function start(cb){
 
 	server.use(restifyjwt({secret: cfg.security.TokenSecret, getToken: auth.fromHeader}).unless({method:['OPTIONS'], path: noauth}))
 
-//	require('../routes/ui').addRoutes(server);
+	require('../routes/ui').addRoutes(server);
 	require('../routes/routes').addRoutes(server);
 
 	server.listen(cfg.server.port);

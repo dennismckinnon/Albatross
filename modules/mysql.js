@@ -110,6 +110,7 @@ function findUserByEmail(email, cb){
 
 
 module.exports = {
+	db: connection,
 	createTicket: createTicket,
 	redeemTicket: redeemTicket,
 	checkValid: checkValid,
